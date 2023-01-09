@@ -3,7 +3,6 @@ import uuid
 from django.shortcuts import render
 from rest_framework import generics, serializers, status
 from rest_framework.response import Response
-
 from account.models import User
 from account.serializers import RegistrationSerializer
 
@@ -23,5 +22,5 @@ class RegistrationAPIView(generics.GenericAPIView):
                 'User': serializer.data},
                 status=status.HTTP_201_CREATED
             )
-        return Response({'Errors': serializers.errors}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'Errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 

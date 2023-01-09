@@ -13,8 +13,9 @@ class User(models.Model):
         max_length=100,
         unique=True
     )
-    full_name = models.CharField(max_length=100)
+    username = models.CharField(max_length=100)
     password = models.CharField(max_length=255)
+    password2 = models.CharField(max_length=255)
     country = CountryField()
     company_name = models.CharField(max_length=255, null=True, blank=True)
     pc = models.CharField(max_length=10, null=True, choices=PC_CHOICE)
@@ -23,6 +24,6 @@ class User(models.Model):
     is_verified = models.BooleanField(default=False)
 
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = ["full_name", "phone_number"]
+    REQUIRED_FIELDS = ["username", "phone_number"]
     def __str__(self):
-        return f'{self.full_name}'
+        return f'{self.username}'

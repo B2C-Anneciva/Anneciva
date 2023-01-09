@@ -3,7 +3,7 @@ from django.db import models
 from django_countries.fields import CountryField
 import random
 
-class Customer(models.Model):
+class User(models.Model):
     PC_CHOICE = (
         ('PROVIDER', 'provider'),
         ('COSTUMER', 'customer'),

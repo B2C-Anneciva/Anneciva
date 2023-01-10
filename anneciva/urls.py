@@ -15,13 +15,15 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from account.views import RegistrationAPIView
+# from anneciva.api import router
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+
+from account.views import RegistrationAPIView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api', include('account.urls')),
-    path('api/register/', RegistrationAPIView.as_view(), name='register'),
-    path('api/login/', TokenObtainPairView.as_view(), name='login'),
-    path('api/refresh-token/', TokenRefreshView.as_view(), name='refreshtoken'),
+    path('register/', RegistrationAPIView.as_view(), name='register'),
+    path('login/', TokenObtainPairView.as_view(), name='login'),
+    path('refresh-token/', TokenRefreshView.as_view(), name='refreshtoken'),
 ]

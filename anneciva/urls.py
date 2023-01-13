@@ -22,9 +22,7 @@ from account.views import RegistrationAPIView, UserLoginView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api', include('account.urls')),
-    path('register/', RegistrationAPIView.as_view(), name='register'),
-    path('login/', UserLoginView.as_view(), name='login'),
-    path('token-obtain-pair-view/', TokenObtainPairView.as_view(), name='tokenobtainpairview'),
-    path('refresh-token/', TokenRefreshView.as_view(), name='refreshtoken'),
+    path('api/user/', include('account.urls')),
+    path('api/token-obtain-pair-view/', TokenObtainPairView.as_view(), name='tokenobtainpairview'),
+    path('api/refresh-token/', TokenRefreshView.as_view(), name='refreshtoken'),
 ]

@@ -3,6 +3,7 @@ from django.contrib.auth.models import AbstractUser
 from django_countries.fields import CountryField
 
 class CustomerUser(AbstractUser):
+
     USER_TYPE_CHOICE = (
         ('PROVIDER', 'provider'),
         ('COSTUMER', 'customer'),
@@ -17,16 +18,16 @@ class CustomerUser(AbstractUser):
     country = CountryField()
     company_name = models.CharField(max_length=255, null=True, blank=True)
     user_type = models.CharField(max_length=10, null=True, choices=USER_TYPE_CHOICE)
-    phone_number = models.CharField(max_length=50)
-    corporate_number = models.CharField(max_length=50, null=True, blank=True)
-    is_verified = models.BooleanField(default=False)
-
-    # objects = MyUserManager()
+    phone_number = models.CharField(max_length=30, null=True, blank=True)
+    corporate_number = models.CharField(max_length=30, null=True, blank=True)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["username", "phone_number"]
     def __str__(self):
-        return f'{self.username}'
+        return self.email
+
+
+
 
 
 

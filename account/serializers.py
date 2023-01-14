@@ -9,7 +9,6 @@ class RegistrationSerializer(serializers.ModelSerializer):
             'email',
             'username',
             'password',
-            # 'password2',
             'country',
             'company_name',
             'user_type',
@@ -22,21 +21,3 @@ class UserLoginSerializer(serializers.ModelSerializer):
         model = CustomerUser
         fields = ['email', 'password']
 
-class RegisterSerializer(serializers.ModelSerializer):
-    password1 = serializers.CharField(style={'input_type': 'password'}, write_only=True)
-    class Meta:
-        model = CustomerUser
-        fields = (
-            'email',
-            'username',
-            'password',
-            'password1',
-            'country',
-            'company_name',
-            'user_type',
-            'phone_number',
-            'corporate_number'
-        )
-        extra_kwargs = {
-            'password': {'write_only': True}
-        }

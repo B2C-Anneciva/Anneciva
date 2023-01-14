@@ -1,17 +1,21 @@
 from django.contrib.auth import authenticate
 from django.shortcuts import render
-from rest_framework import generics, status
+from rest_framework import generics, status, permissions
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from account.models import CustomerUser
-from account.serializers import RegistrationSerializer, UserLoginSerializer
+from account.serializers import UserLoginSerializer, RegistrationSerializer
 
+# @api_view(['POST'])
 class RegistrationAPIView(generics.GenericAPIView):
 
     serializer_class = RegistrationSerializer
+    permission_classes = [permissions.AllowAny]
 
-    def post(self, request):
-        serializer = self.get_serializer(data=request.data)
+    def post(self, request, format=None):
+        # serializer = self.get_serializer(data=request.data)
         data = request.data
         username = data['username']
         email = data['email']
@@ -47,6 +51,7 @@ class RegistrationAPIView(generics.GenericAPIView):
 class UserLoginView(generics.GenericAPIView):
 
     serializer_class = UserLoginSerializer
+    permission_classes = [permissions.AllowAny]
     def post(self, request, format=None):
         serializer = UserLoginSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):

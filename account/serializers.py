@@ -1,13 +1,15 @@
+from django_countries.serializers import CountryFieldMixin
 from rest_framework import serializers
 from account.models import CustomerUser
 
-class RegistrationSerializer(serializers.ModelSerializer):
+class RegistrationSerializer(serializers.ModelSerializer, CountryFieldMixin):
 
     class Meta:
         model = CustomerUser
         fields = (
-            'email',
             'username',
+            'full_name',
+            'email',
             'password',
             'country',
             'company_name',
@@ -16,8 +18,12 @@ class RegistrationSerializer(serializers.ModelSerializer):
             'corporate_number'
         )
 class UserLoginSerializer(serializers.ModelSerializer):
+
     email = serializers.EmailField(max_length=255)
     class Meta:
         model = CustomerUser
-        fields = ['email', 'password']
+        fields = [
+            'email',
+            'password'
+        ]
 

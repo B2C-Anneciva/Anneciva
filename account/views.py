@@ -5,11 +5,13 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from account.models import CustomerUser
-from account.serializers import UserLoginSerializer, RegistrationSerializer, UserProfileSerializer
+from account.serializers import UserLoginSerializer, RegistrationSerializer, UserProfileSerializer, \
+    ChangePasswordSerializer
 from account.renderers import UserRenderer
 from rest_framework_simplejwt.tokens import RefreshToken
 
 def get_tokens_for_user(user):
+
     refresh = RefreshToken.for_user(user)
     return {
         'refresh': str(refresh),
@@ -23,6 +25,7 @@ class RegistrationAPIView(generics.GenericAPIView):
     renderer_classes = [UserRenderer]
 
     def post(self, request, format=None):
+
         data = request.data
         username = data['username']
         full_name = data['full_name']
@@ -67,6 +70,7 @@ class UserLoginView(generics.GenericAPIView):
     http_method_names = ['get', 'head', 'post']
     renderer_classes = [UserRenderer]
     def post(self, request):
+
         self.http_method_names.append("GET")
         serializer = UserLoginSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
@@ -87,13 +91,51 @@ class UserProfileView(generics.GenericAPIView):
 
     serializer_class = UserProfileSerializer
     permission_classes = [IsAuthenticated]
-    # renderer_classes = [UserRenderer]
+    renderer_classes = [UserRenderer]
 
     def get(self, request, format=None):
+
         serializer = UserProfileSerializer(request.user)
         return Response(
             serializer.data,
             status=status.HTTP_200_OK
         )
 
+class ChangePasswordView(generics.UpdateAPIView):
+
+    permission_classes = (IsAuthenticated,)
+    serializer_class = ChangePasswordSerializer
+    renderer_classes = [UserRenderer]
+
+    # def post(self, request, format=None):
+    #     user = self.context.get('user')
+    #     serializer = ChangePasswordSerializer(data=request.data, context={'user': request.user})
+
+    def get_object(self, queryset=None):
+        obj = self.request.user
+        return obj
+
+    def post(self, request, *args, **kwargs):
+
+        self.object = self.get_object()
+        serializer = self.get_serializer(data=request.data)
+        data = request.data
+        # password = data['password']
+        new_password = data['new_password']
+
+        if serializer.is_valid():
+            # Check old password
+            if not self.object.check_password(serializer.data.get('password')):
+                return Response({"password": ["Wrong password."]}, status=status.HTTP_400_BAD_REQUEST)
+            # set_password also hashes the password that the user will get
+            self.object.set_password(new_password)
+            self.object.save()
+            return Response({
+                'Message': 'Password changed succesfully'},
+                status=status.HTTP_200_OK,
+            )
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
 

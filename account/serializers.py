@@ -1,3 +1,4 @@
+from django.contrib.auth.password_validation import validate_password
 from django_countries.serializers import CountryFieldMixin
 from rest_framework import serializers
 from account.models import CustomerUser
@@ -32,7 +33,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomerUser
         fields = [
-            'id',
             'full_name',
             'email',
             # 'country',
@@ -41,4 +41,11 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'phone_number',
             'corporate_number',
         ]
+
+class ChangePasswordSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = CustomerUser
+        fields =['password']
+
 

@@ -107,10 +107,6 @@ class ChangePasswordView(generics.UpdateAPIView):
     serializer_class = ChangePasswordSerializer
     renderer_classes = [UserRenderer]
 
-    # def post(self, request, format=None):
-    #     user = self.context.get('user')
-    #     serializer = ChangePasswordSerializer(data=request.data, context={'user': request.user})
-
     def get_object(self, queryset=None):
         obj = self.request.user
         return obj
@@ -120,14 +116,12 @@ class ChangePasswordView(generics.UpdateAPIView):
         self.object = self.get_object()
         serializer = self.get_serializer(data=request.data)
         data = request.data
-        # password = data['password']
         new_password = data['new_password']
 
         if serializer.is_valid():
-            # Check old password
+
             if not self.object.check_password(serializer.data.get('password')):
                 return Response({"password": ["Wrong password."]}, status=status.HTTP_400_BAD_REQUEST)
-            # set_password also hashes the password that the user will get
             self.object.set_password(new_password)
             self.object.save()
             return Response({

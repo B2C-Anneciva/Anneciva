@@ -1,12 +1,14 @@
 from django.contrib.auth import authenticate
 from django.shortcuts import render
-from rest_framework import generics, status, permissions
+from rest_framework import generics, status, permissions, mixins
+from rest_framework.generics import get_object_or_404
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from account.models import CustomerUser
 from account.serializers import UserLoginSerializer, RegistrationSerializer, UserProfileSerializer, \
-    ChangePasswordSerializer
+    ChangePasswordSerializer, EditProfileSerializer
 from account.renderers import UserRenderer
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -132,4 +134,32 @@ class ChangePasswordView(generics.UpdateAPIView):
             serializer.errors,
             status=status.HTTP_400_BAD_REQUEST
         )
+
+
+class EditProfileView(generics.GenericAPIView):
+
+    permission_classes = (IsAuthenticated,)
+    serializer_class = EditProfileSerializer
+
+    def put(self, request, instance=None, *args, **kwargs):
+
+        pk = kwargs.get('pk', None)
+        if not pk:
+            return Response({'error': 'Method put not allowed'})
+        try:
+            instance = CustomerUser.objects.get(pk=pk)
+        except:
+            return Response({'error':'Object does not exists'})
+        serializer = EditProfileSerializer(data=request.data, instance=instance)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(
+            {'Updated'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+
+
+
+
 

@@ -2,6 +2,14 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django_countries.fields import CountryField
 
+COUNTRY_CHOICE = (
+    ('UZBEKISTAN', 'uzbekistan'),
+    ('KYRGIZISTAN', 'kyrgizistan'),
+    ('KAZAKHSTAN', 'kazakhstan'),
+    ('TURKMENISTAN', 'turkmenistan'),
+    ('TADJIKISTAN', 'tadjikistan'),
+)
+
 class CustomerUser(AbstractUser):
 
     USER_TYPE_CHOICE = (
@@ -16,7 +24,7 @@ class CustomerUser(AbstractUser):
     username = models.CharField(max_length=100, null=True, blank=True)
     full_name = models.CharField(max_length=70,null=True, blank=True)
     password = models.CharField(max_length=255)
-    country = CountryField()
+    country = models.CharField(max_length=50, choices=COUNTRY_CHOICE)
     company_name = models.CharField(max_length=255, null=True, blank=True)
     user_type = models.CharField(max_length=15, choices=USER_TYPE_CHOICE)
     phone_number = models.CharField(max_length=30)

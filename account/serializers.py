@@ -98,13 +98,13 @@ class SendPasswordEmailSerializer(serializers.Serializer):
             print('Password reset token', token)
             link = 'http://127.0.0.1:8000/auth/user/reset/'+uid+'/'+token
             print(link)
-            # body = 'Click following link to reset your password' + link
-            # data = {
-            #     'subject': 'Reset your password',
-            #     'body': body,
-            #     'to_email': user.email,
-            # }
-            # Util.send_email(data)
+            body = 'Click following link to reset your password' + link
+            data = {
+                'subject': 'Reset your password',
+                'body': body,
+                'to_email': user.email,
+            }
+            Util.send_email(data)
             return attrs
 
         else:

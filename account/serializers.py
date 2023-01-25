@@ -137,3 +137,18 @@ class UserPasswordResetSerializer(serializers.Serializer):
             PasswordResetTokenGenerator(user, token)
             raise ValidationErr('Token is not valid or expired')
 
+class LogOutSerializer(serializers.ModelSerializer):
+
+    # email = serializers.EmailField(max_length=255)
+    class Meta:
+        model = CustomerUser
+        fields = [
+            'full_name',
+            'email',
+            'country',
+            'company_name',
+            'user_type',
+            'phone_number',
+            'corporate_number',
+        ]
+

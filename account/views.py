@@ -71,8 +71,7 @@ class RegistrationAPIView(generics.GenericAPIView):
             user.save()
             uid = urlsafe_base64_encode(force_bytes(user.id))
             token = PasswordResetTokenGenerator().make_token(user)
-            print(token)
-            link = 'http://127.0.0.1:8000/auth/user/verify/' + uid + '/' + token
+            link = 'http://127.0.0.1:8000/auth/user/verify/' + uid + '/' + token + '/'
             print(link)
             body = 'Use link below to verify your email ' + link
             data = {
@@ -84,7 +83,9 @@ class RegistrationAPIView(generics.GenericAPIView):
 
             return Response({
                 'token': get_tokens_for_user(user),
-                'Message': 'We send code to your email'},
+                'Message': request.data,
+                'Msg': 'We send link to your email for verify',
+            },
                 status=status.HTTP_200_OK
             )
 
@@ -112,17 +113,18 @@ class VerificationView(generics.GenericAPIView):
                 {'error': 'Activation expired'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        # except jwt.exceptions.DecodeError as identifier:
-        #     return Response(
-        #         {'error': 'Invalid token'},
-        #         status=status.HTTP_400_BAD_REQUEST
-        #     )
+        except jwt.exceptions.DecodeError as identifier:
+            return Response(
+                {'error': 'Invalid token'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 class UserLoginView(generics.GenericAPIView):
 
     serializer_class = UserLoginSerializer
     permission_classes = [permissions.AllowAny]
     renderer_classes = [UserRenderer]
+
     def post(self, request):
 
         serializer = UserLoginSerializer(data=request.data)
@@ -134,11 +136,11 @@ class UserLoginView(generics.GenericAPIView):
                 token = get_tokens_for_user(user)
                 return Response({
                     'token': token,
-                    'Message': 'Login Success'},
+                    'Message': serializer.data},
                     status=status.HTTP_200_OK
                 )
             else:
-                return Response({'Errors': {'non_field_errors': ['Email or Password is not valid or your account is not active']}}, status=status.HTTP_404_NOT_FOUND)
+                return Response({'Errors': {'non_field_errors': ['Email or Password is not valid or your account is not active ']}}, status=status.HTTP_404_NOT_FOUND)
 
 class UserProfileView(generics.GenericAPIView):
 
@@ -149,16 +151,10 @@ class UserProfileView(generics.GenericAPIView):
     def get(self, request, format=None):
 
         serializer = UserProfileSerializer(request.user)
-        if request.user.is_verified:
-            return Response(
-                serializer.data,
-                status=status.HTTP_200_OK
-            )
-        else:
-            return Response(
-                {'Message': 'Your profile is not active'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        return Response(
+            serializer.data,
+            status=status.HTTP_200_OK
+        )
 
 class ChangePasswordView(generics.UpdateAPIView):
 
@@ -178,19 +174,16 @@ class ChangePasswordView(generics.UpdateAPIView):
         new_password = data['new_password']
 
         if serializer.is_valid():
-            if self.object.is_verified:
-                if not self.object.check_password(serializer.data.get('password')):
-                    return Response({"password": ["Wrong password."]}, status=status.HTTP_400_BAD_REQUEST)
-                self.object.set_password(new_password)
-                self.object.save()
-                return Response({
-                    'Message': 'Password changed succesfully'},
-                    status=status.HTTP_200_OK,
-                )
-            else:
-                return Response(
-                    {'Message': 'Your profile is not active'}
-                )
+            if not self.object.check_password(serializer.data.get('password')):
+                return Response({"password": ["Wrong password."]}, status=status.HTTP_400_BAD_REQUEST)
+            self.object.set_password(new_password)
+            self.object.save()
+            return Response({
+                'Message': request.data,
+                'Msg': 'Password changed succesfully'
+            },
+                status=status.HTTP_200_OK,
+            )
         return Response(
             serializer.errors,
             status=status.HTTP_400_BAD_REQUEST
@@ -213,17 +206,14 @@ class EditProfileView(generics.GenericAPIView):
             return Response({'error': 'Object does not exists'})
         serializer = EditProfileSerializer(data=request.data, instance=instance)
         serializer.is_valid(raise_exception=True)
-        if request.user.is_verified:
-            serializer.save()
-            return Response(
-                {'Message': 'Your profile updated succesfully'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        else:
-            return Response(
-                {'Message': 'Your profile is not active'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        serializer.save()
+        return Response(
+            {
+                'Message': request.data,
+                'Msg': 'Your profile updated succesfully'
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
 class SendPasswordEmailView(generics.GenericAPIView):
 
@@ -235,7 +225,10 @@ class SendPasswordEmailView(generics.GenericAPIView):
         serializer = SendPasswordEmailSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             return Response(
-                {'Message': 'Password reset link send. Please check your email!'},
+                {
+                    'Message': request.data,
+                    'Msg': 'Password reset link send. Please check your email!'
+                },
                 status=status.HTTP_200_OK
             )
         return Response(
@@ -253,7 +246,10 @@ class UserPasswordResetView(generics.GenericAPIView):
         serializer = UserPasswordResetSerializer(data=request.data, context={'uid': uid, 'token': token})
         if serializer.is_valid(raise_exception=True):
             return Response(
-                {'Message': 'Password reset succesfully'},
+                {
+                    'Message': request.data,
+                    'Msg': 'Password reset succesfully'
+                },
                 status=status.HTTP_200_OK
             )
         return Response(

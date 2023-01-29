@@ -1,14 +1,27 @@
+from xml.dom import ValidationErr
+
+import jwt
 from django.contrib.auth import authenticate, logout
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.shortcuts import render
+from django.utils.encoding import force_bytes, smart_str
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from drf_yasg import openapi
 from rest_framework import generics, status, permissions
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from account.models import CustomerUser
 from account.serializers import UserLoginSerializer, RegistrationSerializer, UserProfileSerializer, \
-    ChangePasswordSerializer, EditProfileSerializer, SendPasswordEmailSerializer, UserPasswordResetSerializer, LogOutSerializer
+    ChangePasswordSerializer, EditProfileSerializer, SendPasswordEmailSerializer, UserPasswordResetSerializer, VerifySerializer
 from account.renderers import UserRenderer
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.conf import settings
+from drf_yasg.utils import swagger_auto_schema
+
+
+from account.utils import Util
+
 
 def get_tokens_for_user(user):
 
@@ -56,12 +69,54 @@ class RegistrationAPIView(generics.GenericAPIView):
             )
             user.set_password(password)
             user.save()
-            token = get_tokens_for_user(user)
+            uid = urlsafe_base64_encode(force_bytes(user.id))
+            token = PasswordResetTokenGenerator().make_token(user)
+            print(token)
+            link = 'http://127.0.0.1:8000/auth/user/verify/' + uid + '/' + token
+            print(link)
+            body = 'Use link below to verify your email ' + link
+            data = {
+                'subject': 'Your verify link',
+                'body': body,
+                'to_email': user.email,
+            }
+            Util.send_email(data)
+
             return Response({
-                'token': token,
-                'Message': 'User created succesfully'},
-                status=status.HTTP_201_CREATED
+                'token': get_tokens_for_user(user),
+                'Message': 'We send code to your email'},
+                status=status.HTTP_200_OK
             )
+
+class VerificationView(generics.GenericAPIView):
+
+    serializer_class = VerifySerializer
+    permission_classes = [permissions.AllowAny]
+    renderer_classes = [UserRenderer]
+    token_param_config = openapi.Parameter('token', in_=openapi.IN_QUERY, description='Description', type=openapi.TYPE_STRING)
+    @swagger_auto_schema(manual_parameters=[token_param_config])
+    def get(self, request, token, uid):
+        try:
+            id = smart_str(urlsafe_base64_decode(uid))
+            user = CustomerUser.objects.get(id=id)
+            if not PasswordResetTokenGenerator().check_token(user, token):
+                raise ValidationErr('Token is not valid or expired')
+            user.is_verified = True
+            user.save()
+            return Response(
+                {'Message': 'User activated succesfully'},
+                status=status.HTTP_200_OK
+            )
+        except jwt.ExpiredSignatureError as identifier:
+            return Response(
+                {'error': 'Activation expired'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        # except jwt.exceptions.DecodeError as identifier:
+        #     return Response(
+        #         {'error': 'Invalid token'},
+        #         status=status.HTTP_400_BAD_REQUEST
+        #     )
 
 class UserLoginView(generics.GenericAPIView):
 
@@ -75,7 +130,7 @@ class UserLoginView(generics.GenericAPIView):
             email = serializer.data.get('email')
             password = serializer.data.get('password')
             user = authenticate(email=email, password=password)
-            if user is not None:
+            if user.is_verified:
                 token = get_tokens_for_user(user)
                 return Response({
                     'token': token,
@@ -83,7 +138,7 @@ class UserLoginView(generics.GenericAPIView):
                     status=status.HTTP_200_OK
                 )
             else:
-                return Response({'Errors': {'non_field_errors': ['Email or Password is not valid']}}, status=status.HTTP_404_NOT_FOUND)
+                return Response({'Errors': {'non_field_errors': ['Email or Password is not valid or your account is not active']}}, status=status.HTTP_404_NOT_FOUND)
 
 class UserProfileView(generics.GenericAPIView):
 
@@ -94,10 +149,16 @@ class UserProfileView(generics.GenericAPIView):
     def get(self, request, format=None):
 
         serializer = UserProfileSerializer(request.user)
-        return Response(
-            serializer.data,
-            status=status.HTTP_200_OK
-        )
+        if request.user.is_verified:
+            return Response(
+                serializer.data,
+                status=status.HTTP_200_OK
+            )
+        else:
+            return Response(
+                {'Message': 'Your profile is not active'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 class ChangePasswordView(generics.UpdateAPIView):
 
@@ -117,15 +178,19 @@ class ChangePasswordView(generics.UpdateAPIView):
         new_password = data['new_password']
 
         if serializer.is_valid():
-
-            if not self.object.check_password(serializer.data.get('password')):
-                return Response({"password": ["Wrong password."]}, status=status.HTTP_400_BAD_REQUEST)
-            self.object.set_password(new_password)
-            self.object.save()
-            return Response({
-                'Message': 'Password changed succesfully'},
-                status=status.HTTP_200_OK,
-            )
+            if self.object.is_verified:
+                if not self.object.check_password(serializer.data.get('password')):
+                    return Response({"password": ["Wrong password."]}, status=status.HTTP_400_BAD_REQUEST)
+                self.object.set_password(new_password)
+                self.object.save()
+                return Response({
+                    'Message': 'Password changed succesfully'},
+                    status=status.HTTP_200_OK,
+                )
+            else:
+                return Response(
+                    {'Message': 'Your profile is not active'}
+                )
         return Response(
             serializer.errors,
             status=status.HTTP_400_BAD_REQUEST
@@ -148,11 +213,17 @@ class EditProfileView(generics.GenericAPIView):
             return Response({'error': 'Object does not exists'})
         serializer = EditProfileSerializer(data=request.data, instance=instance)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(
-            {'Message': 'Your profile updated succesfully'},
-            status=status.HTTP_400_BAD_REQUEST
-        )
+        if request.user.is_verified:
+            serializer.save()
+            return Response(
+                {'Message': 'Your profile updated succesfully'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        else:
+            return Response(
+                {'Message': 'Your profile is not active'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 class SendPasswordEmailView(generics.GenericAPIView):
 
@@ -190,16 +261,16 @@ class UserPasswordResetView(generics.GenericAPIView):
             status=status.HTTP_400_BAD_REQUEST
         )
 
-class LogOutView(generics.GenericAPIView):
-
-    serializer_class = LogOutSerializer
-    permissions = [IsAuthenticated]
-
-    def post(self, request, format=None):
-        serializer = LogOutSerializer(request.user)
-        logout(serializer)
-        return Response(
-            status=status.HTTP_200_OK
-        )
+# class LogOutView(generics.GenericAPIView):
+#
+#     serializer_class = LogOutSerializer
+#     permissions = [IsAuthenticated]
+#
+#     def post(self, request, format=None):
+#         serializer = LogOutSerializer(request.user)
+#         logout(serializer)
+#         return Response(
+#             status=status.HTTP_200_OK
+#         )
 
 

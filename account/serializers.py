@@ -26,6 +26,14 @@ class RegistrationSerializer(serializers.ModelSerializer, CountryFieldMixin):
             'phone_number',
             'corporate_number'
         )
+
+class VerifySerializer(serializers.ModelSerializer):
+
+    token = serializers.CharField(max_length=555)
+    class Meta:
+        model = CustomerUser
+        fields = ['token']
+
 class UserLoginSerializer(serializers.ModelSerializer):
 
     email = serializers.EmailField(max_length=255)
@@ -112,7 +120,7 @@ class SendPasswordEmailSerializer(serializers.Serializer):
 
 class UserPasswordResetSerializer(serializers.Serializer):
 
-    password = serializers.CharField(max_length=255, style={'input_type':'password'}, write_only=True)
+    password = serializers.CharField(max_length=255, style={'input_type': 'password'}, write_only=True)
     password1 = serializers.CharField(max_length=255, style={'input_type': 'password'}, write_only=True)
 
     class Meta:
@@ -137,18 +145,18 @@ class UserPasswordResetSerializer(serializers.Serializer):
             PasswordResetTokenGenerator(user, token)
             raise ValidationErr('Token is not valid or expired')
 
-class LogOutSerializer(serializers.ModelSerializer):
-
-    # email = serializers.EmailField(max_length=255)
-    class Meta:
-        model = CustomerUser
-        fields = [
-            'full_name',
-            'email',
-            'country',
-            'company_name',
-            'user_type',
-            'phone_number',
-            'corporate_number',
-        ]
+# class LogOutSerializer(serializers.ModelSerializer):
+#
+#     # email = serializers.EmailField(max_length=255)
+#     class Meta:
+#         model = CustomerUser
+#         fields = [
+#             'full_name',
+#             'email',
+#             'country',
+#             'company_name',
+#             'user_type',
+#             'phone_number',
+#             'corporate_number',
+#         ]
 

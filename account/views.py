@@ -1,7 +1,7 @@
 from xml.dom import ValidationErr
 
 import jwt
-from django.contrib.auth import authenticate, logout
+from django.contrib.auth import authenticate
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.shortcuts import render
 from django.utils.encoding import force_bytes, smart_str
@@ -16,7 +16,6 @@ from account.serializers import UserLoginSerializer, RegistrationSerializer, Use
     ChangePasswordSerializer, EditProfileSerializer, SendPasswordEmailSerializer, UserPasswordResetSerializer, VerifySerializer
 from account.renderers import UserRenderer
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.conf import settings
 from drf_yasg.utils import swagger_auto_schema
 
 
@@ -257,16 +256,18 @@ class UserPasswordResetView(generics.GenericAPIView):
             status=status.HTTP_400_BAD_REQUEST
         )
 
-# class LogOutView(generics.GenericAPIView):
-#
-#     serializer_class = LogOutSerializer
-#     permissions = [IsAuthenticated]
-#
-#     def post(self, request, format=None):
-#         serializer = LogOutSerializer(request.user)
-#         logout(serializer)
-#         return Response(
-#             status=status.HTTP_200_OK
-#         )
+class LogoutView(generics.GenericAPIView):
+
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request):
+        try:
+            refresh_token = request.data["refresh_token"]
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+
+            return Response(status=status.HTTP_205_RESET_CONTENT)
+        except Exception as e:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
 

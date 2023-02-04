@@ -193,6 +193,7 @@ class EditProfileView(generics.GenericAPIView):
 
     permission_classes = (IsAuthenticated,)
     serializer_class = EditProfileSerializer
+    queryset = CustomerUser.objects.all()
 
     def put(self, request, *args, **kwargs):
 
@@ -256,18 +257,18 @@ class UserPasswordResetView(generics.GenericAPIView):
             status=status.HTTP_400_BAD_REQUEST
         )
 
-class LogoutView(generics.GenericAPIView):
-
-    permission_classes = (IsAuthenticated,)
-
-    def post(self, request):
-        try:
-            refresh_token = request.data["refresh_token"]
-            token = RefreshToken(refresh_token)
-            token.blacklist()
-
-            return Response(status=status.HTTP_205_RESET_CONTENT)
-        except Exception as e:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+# class LogoutView(generics.GenericAPIView):
+#
+#     permission_classes = (IsAuthenticated,)
+#
+#     def post(self, request):
+#         try:
+#             refresh_token = request.data["refresh_token"]
+#             token = RefreshToken(refresh_token)
+#             token.blacklist()
+#
+#             return Response(status=status.HTTP_205_RESET_CONTENT)
+#         except Exception as e:
+#             return Response(status=status.HTTP_400_BAD_REQUEST)
 
 

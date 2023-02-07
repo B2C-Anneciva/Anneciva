@@ -1,5 +1,4 @@
 from django.db import models
-
 from account.models import CustomerUser
 
 
@@ -13,6 +12,14 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
+COUNTRY_CHOICE = (
+    ('UZBEKISTAN', 'uzbekistan'),
+    ('KYRGIZISTAN', 'kyrgizistan'),
+    ('KAZAKHSTAN', 'kazakhstan'),
+    ('TURKMENISTAN', 'turkmenistan'),
+    ('TADJIKISTAN', 'tadjikistan'),
+)
+
 class Product(models.Model):
 
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, related_name='products')
@@ -20,6 +27,17 @@ class Product(models.Model):
     price = models.FloatField()
     image = models.ImageField(null=True, blank=True)
     quantity = models.IntegerField(default=0)
+    medicine_form = models.CharField(max_length=255)
+    country = models.CharField(max_length=50, choices=COUNTRY_CHOICE)
+    company = models.CharField(max_length=255)
+    trade_name_of_the_drug = models.CharField(max_length=50)
+    active_ingredient = models.CharField(max_length=255)
+    composition = models.TextField(max_length=1000)
+    pharmacotherapeutic_group = models.TextField(max_length=5000)
+    contraindication = models.TextField(max_length=5000)
+    pharmacokinetic = models.TextField(max_length=5000)
+    storage_condition = models.TextField(max_length=500)
+    expiration = models.CharField(max_length=255)
 
     def imageURL(self):
         if self.image:
@@ -43,7 +61,7 @@ class Comment(models.Model):
 
 class RatingStar(models.Model):
 
-    value = models.PositiveSmallIntegerField(default=0)
+    value = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return self.value

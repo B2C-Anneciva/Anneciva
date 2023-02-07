@@ -1,7 +1,12 @@
 from django.urls import path
+from rest_framework import routers
 
 from account.views import RegistrationAPIView, UserLoginView, UserProfileView, ChangePasswordView, EditProfileView, \
     SendPasswordEmailView, UserPasswordResetView, VerificationView
+
+# router = routers.DefaultRouter()
+# router.register('register', RegistrationAPIView, basename='register')
+# urlpatterns = router.urls
 
 urlpatterns = [
     path('register/', RegistrationAPIView.as_view(), name='register'),

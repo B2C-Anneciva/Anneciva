@@ -6,6 +6,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 from product.models import Product, Category
 from product.serializers import ProductSerializer, CategorySerializer
+from rest_framework.pagination import PageNumberPagination
 
 class CategoryView(generics.ListAPIView):
 
@@ -21,6 +22,7 @@ class ProductView(generics.ListAPIView):
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_fields = ['category_id', 'name', 'country']
     search_fields = ['name']
+    pagination_class = PageNumberPagination
 
 class ProductDetailView(generics.ListAPIView):
 

@@ -10,6 +10,7 @@ class ProductSerializer(serializers.ModelSerializer):
             'price',
             'company',
             'category',
+            'image',
             'medicine_form',
             'country',
             'company',

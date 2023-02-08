@@ -1,11 +1,17 @@
 from django.shortcuts import render
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
-from rest_framework.filters import SearchFilter, OrderingFilter
+from rest_framework.filters import SearchFilter
 from django_filters.rest_framework import DjangoFilterBackend
 
-from product.models import Product
-from product.serializers import ProductSerializer
+from product.models import Product, Category
+from product.serializers import ProductSerializer, CategorySerializer
+
+class CategoryView(generics.ListAPIView):
+
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    permission_classes = [permissions.AllowAny]
 
 class ProductView(generics.ListAPIView):
 

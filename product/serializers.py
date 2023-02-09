@@ -1,7 +1,28 @@
 from rest_framework import serializers
-from product.models import Product, Category
+from product.models import Product, Category, Comment
 
 class ProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = [
+            'name',
+            'company',
+            'price',
+            'medicine_form'
+        ]
+
+class CommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = [
+            'product',
+            'user',
+            'comment',
+        ]
+
+class ProductDetailSerializer(serializers.ModelSerializer):
+
+    comment = CommentSerializer(many=True)
     class Meta:
         model = Product
         fields = [
@@ -22,6 +43,7 @@ class ProductSerializer(serializers.ModelSerializer):
             'pharmacokinetic',
             'storage_condition',
             'expiration',
+            'comment',
         ]
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -31,3 +53,4 @@ class CategorySerializer(serializers.ModelSerializer):
             'name',
             'description',
         ]
+

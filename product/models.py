@@ -49,15 +49,15 @@ class Product(models.Model):
 
 class Comment(models.Model):
 
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='comment_product')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='comment')
     user = models.ForeignKey(CustomerUser, on_delete=models.CASCADE, related_name='comment_user')
-    subject = models.CharField(max_length=55, blank=True)
-    comment = models.TextField(max_length=255, blank=True)
+    subject = models.CharField(max_length=55, blank=True, null=True)
+    comment = models.TextField(max_length=255, blank=True, null=True)
     create_at = models.DateTimeField(auto_now_add=True)
     update_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.subject
+        return self.comment
 
 class RatingStar(models.Model):
 

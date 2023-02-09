@@ -5,9 +5,12 @@ from rest_framework.response import Response
 from rest_framework.filters import SearchFilter
 from django_filters.rest_framework import DjangoFilterBackend
 
-from product.models import Product, Category, Comment
-from product.serializers import ProductSerializer, CategorySerializer, CommentSerializer, ProductDetailSerializer
+from django.db import models
+from product.models import Product, Category, Comment, Rating
+from product.serializers import ProductSerializer, CategorySerializer, CommentSerializer, ProductDetailSerializer, \
+    RatingSerializer
 from rest_framework.pagination import PageNumberPagination
+from product.service import get_client_ip
 
 class CategoryView(generics.ListAPIView):
 
@@ -17,7 +20,7 @@ class CategoryView(generics.ListAPIView):
 
 class ProductView(generics.ListAPIView):
 
-    queryset = Product.objects.all()
+    queryset = Product.objects.filter()
     serializer_class = ProductSerializer
     permission_classes = [permissions.AllowAny]
     filter_backends = [DjangoFilterBackend, SearchFilter]
@@ -52,6 +55,21 @@ class CommentView(generics.ListAPIView):
             if comment.is_valid():
                 comment.save()
         return Response(status=status.HTTP_200_OK)
+
+class AddStarRatingView(generics.ListAPIView):
+
+    queryset = Rating.objects.all()
+    serializer_class = RatingSerializer
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = RatingSerializer(data=request.data)
+        if request.user.is_authenticated:
+            if serializer.is_valid():
+                serializer.save()
+                return Response(status=status.HTTP_200_OK)
+            else:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 

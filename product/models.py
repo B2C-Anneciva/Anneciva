@@ -31,13 +31,15 @@ class Product(models.Model):
     country = models.CharField(max_length=50, choices=COUNTRY_CHOICE)
     company = models.CharField(max_length=255)
     trade_name_of_the_drug = models.CharField(max_length=50)
-    active_ingredient = models.CharField(max_length=255)
+    active_ingredient = models.CharField(max_length=255, null=True, blank=True)
     composition = models.TextField(max_length=1000)
     pharmacotherapeutic_group = models.TextField(max_length=5000)
     contraindication = models.TextField(max_length=5000)
     pharmacokinetic = models.TextField(max_length=5000)
     storage_condition = models.TextField(max_length=500)
     expiration = models.CharField(max_length=255)
+    create_at = models.DateTimeField(auto_now_add=True)
+    update_at = models.DateTimeField(auto_now=True)
 
     def imageURL(self):
         if self.image:
@@ -67,9 +69,10 @@ class RatingStar(models.Model):
         return self.value
 
 class Rating(models.Model):
-    ip = models.CharField(max_length=15)
-    star = models.ForeignKey(RatingStar, on_delete=models.CASCADE, related_name='stars')
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='rating_product')
+
+    user = models.ForeignKey(CustomerUser, on_delete=models.CASCADE, related_name='rating_user')
+    star = models.PositiveIntegerField(default=0)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='rating')
 
     def __str__(self):
         return f'{self.star} - {self.product}'

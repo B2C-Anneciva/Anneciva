@@ -1,4 +1,6 @@
 from django.db import models
+from django.forms import ModelForm
+
 from account.models import CustomerUser
 from product.models import Product
 
@@ -24,11 +26,12 @@ class Order(models.Model):
 
 class OrderDetail(models.Model):
 
-    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='details')
+    user = models.ForeignKey(CustomerUser, on_delete=models.CASCADE, related_name='details')
     product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True, related_name='orders')
     quantity = models.IntegerField(default=1)
 
     def __str__(self):
-        return f'order:{self.order.id} - {self.product}, quantity:{self.quantity}'
+        return f'order:{self.user} - {self.product}, quantity:{self.quantity}'
+
 
 

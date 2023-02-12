@@ -43,17 +43,16 @@ class ProductDetailView(generics.ListAPIView):
         serializer = ProductDetailSerializer(obj)
         return Response(serializer.data)
 
-class CommentView(generics.ListAPIView):
+class CommentView(generics.ListAPIView, generics.GenericAPIView):
 
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [permissions.AllowAny]
 
     def post(self, request):
-        comment = CommentSerializer(data=request.data)
-        if request.user.is_authenticated:
-            if comment.is_valid():
-                comment.save()
+        serializer = CommentSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
         return Response(status=status.HTTP_200_OK)
 
 class AddStarRatingView(generics.ListAPIView):

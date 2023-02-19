@@ -1,5 +1,6 @@
 from django.db import models
-from django.forms import ModelForm
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 from account.models import CustomerUser
 from product.models import Product
@@ -14,6 +15,7 @@ class Order(models.Model):
     ]
 
     customer = models.ForeignKey(CustomerUser, on_delete=models.SET_NULL, null=True, related_name='orders')
+    total = models.DecimalField(default=0, max_digits=10, decimal_places=2, blank=True, null=True)
     order_date = models.DateTimeField(auto_now_add=True)
     expired_date = models.DateTimeField(null=True)
     required_date = models.DateTimeField(null=True)
@@ -24,11 +26,19 @@ class Order(models.Model):
     def __str__(self):
         return f'{self.customer.__str__()} -> order:{self.id}'
 
+    # @receiver(post_save, sender=CustomerUser)
+    # def create_user_cart(sender, created, instance, *args, **kwargs):
+    #     if created:
+    #         Order.objects.create(user=instance)
+
 class OrderDetail(models.Model):
 
     user = models.ForeignKey(CustomerUser, on_delete=models.CASCADE, related_name='details')
     product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True, related_name='orders')
     quantity = models.IntegerField(default=1)
+
+    def total_price(self):
+        return self.product.price*self.quantity
 
     def __str__(self):
         return f'order:{self.user} - {self.product}, quantity:{self.quantity}'

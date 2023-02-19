@@ -131,7 +131,7 @@ class UserLoginView(generics.GenericAPIView):
             email = serializer.data.get('email')
             password = serializer.data.get('password')
             user = authenticate(email=email, password=password)
-            if user.is_verified:
+            if user and user.is_verified:
                 token = get_tokens_for_user(user)
                 return Response({
                     'token': token,

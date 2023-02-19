@@ -12,10 +12,14 @@ COUNTRY_CHOICE = (
 
 class CustomerUser(AbstractUser):
 
+    Customer = 'Customer'
+    Provider = 'Provider'
+    Both = 'Both'
+
     USER_TYPE_CHOICE = (
-        ('PROVIDER', 'provider'),
-        ('COSTUMER', 'customer'),
-        ('BOTH', 'both'),
+        ('Provider', 'provider'),
+        ('Customer', 'customer'),
+        ('Both', 'both'),
     )
     email = models.EmailField(
         max_length=100,
@@ -35,6 +39,32 @@ class CustomerUser(AbstractUser):
     REQUIRED_FIELDS = ["username", "phone_number"]
     def __str__(self):
         return self.email
+
+class Customer(models.Model):
+
+    user = models.ForeignKey(CustomerUser, on_delete=models.CASCADE, related_name='customer')
+    name = models.CharField(max_length=50, null=True, blank=True)
+    related = 'Costumer'
+
+    def __str__(self):
+        return self.user.full_name
+class Provider(models.Model):
+
+    user = models.ForeignKey(CustomerUser, on_delete=models.CASCADE, related_name='provider')
+    name = models.CharField(max_length=50, null=True, blank=True)
+    related = 'Provider'
+
+    def __str__(self):
+        return self.user.full_name
+
+class Both(models.Model):
+
+    user = models.ForeignKey(CustomerUser, on_delete=models.CASCADE, related_name='both')
+    name = models.CharField(max_length=50, null=True, blank=True)
+    related = 'Both'
+
+    def __str__(self):
+        return self.user.full_name
 
 
 

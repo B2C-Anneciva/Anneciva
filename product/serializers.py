@@ -2,11 +2,13 @@ from rest_framework import serializers
 from product.models import Product, Category, Comment, Rating
 
 class RatingSerializer(serializers.ModelSerializer):
+
+    product_id = serializers.IntegerField()
     class Meta:
         model = Rating
         fields = [
-            'product',
-            'user',
+            'product_id',
+            # 'user',
             'star',
         ]
 class ProductSerializer(serializers.ModelSerializer):
@@ -23,12 +25,14 @@ class ProductSerializer(serializers.ModelSerializer):
         ]
 
 class CommentSerializer(serializers.ModelSerializer):
+
+    product_id = serializers.IntegerField()
     class Meta:
         model = Comment
         fields = [
-            'product',
-            'user',
+            'product_id',
             'comment',
+            # 'user'
         ]
 
 

@@ -52,14 +52,15 @@ INSTALLED_APPS = [
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
-        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.permissions.IsAdminUser',
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.BasicAuthentication',
-        # 'rest_framework.permissions.IsAdminUser'
-   )
+        'rest_framework.authentication.TokenAuthentication',
+   ),
+    'PAGE_SIZE': 2
 }
 
 import datetime
@@ -186,9 +187,9 @@ MEDIA_URL = 'media/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
-REST_FRAMEWORK = {
-    'PAGE_SIZE': 2
-}
+# REST_FRAMEWORK = {
+#     'PAGE_SIZE': 2
+# }
 
 
 SIMPLE_JWT = {
@@ -219,7 +220,7 @@ SIMPLE_JWT = {
     'JTI_CLAIM': 'jti',
 
     'SLIDING_TOKEN_REFRESH_EXP_CLAIM': 'refresh_exp',
-    'SLIDING_TOKEN_LIFETIME': timedelta(minutes=5),
+    'SLIDING_TOKEN_LIFETIME': timedelta(minutes=60),
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
 }
 

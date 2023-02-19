@@ -4,8 +4,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.filters import SearchFilter
 from django_filters.rest_framework import DjangoFilterBackend
-
-from django.db import models
 from product.models import Product, Category, Comment, Rating
 from product.serializers import ProductSerializer, CategorySerializer, CommentSerializer, ProductDetailSerializer, \
     RatingSerializer
@@ -47,12 +45,20 @@ class CommentView(generics.ListAPIView, generics.GenericAPIView):
 
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
-    # permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
 
-    def post(self, request):
-        serializer = CommentSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
+    def post(self, request, format=None):
+
+        user = request.user
+        product = Product.objects.get(id=request.data['product_id'])
+        comment = request.data['comment']
+
+        comments = Comment.objects.create(
+            user=user,
+            product=product,
+            comment=comment,
+        )
+        comments.save()
         return Response(status=status.HTTP_200_OK)
 
 class AddStarRatingView(generics.ListAPIView):
@@ -61,14 +67,19 @@ class AddStarRatingView(generics.ListAPIView):
     serializer_class = RatingSerializer
     permission_classes = [IsAuthenticated]
 
-    def post(self, request):
-        serializer = RatingSerializer(data=request.data)
-        if request.user.is_authenticated:
-            if serializer.is_valid():
-                serializer.save()
-                return Response(status=status.HTTP_200_OK)
-            else:
-                return Response(status=status.HTTP_400_BAD_REQUEST)
+    def post(self, request, format=None):
+
+        user = request.user
+        product = Product.objects.get(id=request.data['product_id'])
+        star = request.data['star']
+
+        ratingss = Comment.objects.create(
+            user=user,
+            product=product,
+            star=star,
+        )
+        ratingss.save()
+        return Response(status=status.HTTP_200_OK)
 
 
 
